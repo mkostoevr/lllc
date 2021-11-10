@@ -1,2 +1,4 @@
 *.bat
 *.exe
+*.log
+__pycache__
