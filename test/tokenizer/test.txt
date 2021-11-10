@@ -1,0 +1,8 @@
+identifier identifier_on_end_of_the_line
+(
+)
+(((())))
+123 123
+"!!!???"
+((((638123))))
+( ( ( ) ) )

@@ -44,7 +44,7 @@ Token token_integer(Reader *reader, long value) {
 }
 
 Token *tokenize(Compiler *lllc, char *file_name) {
-	Reader reader = reader_new(lllc, "test/all.lll");
+	Reader reader = reader_new(lllc, file_name);
 	Token *tokens = cvec_Token_new(1024);
 	char *number_string_buffer = cvec_char_new(32);
 
