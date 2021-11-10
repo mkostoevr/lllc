@@ -1,0 +1,6 @@
+(function exitProcess (UInt32 exitCode) Void)
+
+(import exitProcess "ExitProcess" "KERNEL32.DLL")
+
+(function main (Void) UInt32
+ ((return 0)))
