@@ -19,12 +19,10 @@ typedef struct {
 Compiler compiler_new();
 
 typedef enum {
-	TOK_LPAREN,
-	TOK_RPAREN,
-	TOK_IDENTIFIER,
-	TOK_INT,
-	TOK_CHAR,
-	TOK_STRING,
+	TOK_MIN = -1,
+	#define ENTRY(token_name) TOK_ ## token_name
+	#include "tokentypes.h"
+	#undef ENTRY
 	TOK_MAX
 } TokenKind;
 
@@ -64,7 +62,7 @@ char reader_getc(Reader *reader);
 void reader_ungetc(Reader *reader, char c);
 void reader_memorize_position(Reader *reader);
 
-#if ONE_SOURCE
+#ifdef ONE_SOURCE
 #	include "reader.c"
 #	include "ctype.c"
 #	include "tokenizer.c"
