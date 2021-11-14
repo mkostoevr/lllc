@@ -11,6 +11,8 @@ Token token_eof(Reader *reader) {
 }
 
 Token token_lparen(Reader *reader) {
+	assert(reader);
+
 	return (Token) {
 		.kind = TOK_LPAREN,
 		.line = reader->line,
@@ -19,6 +21,8 @@ Token token_lparen(Reader *reader) {
 }
 
 Token token_rparen(Reader *reader) {
+	assert(reader);
+
 	return (Token) {
 		.kind = TOK_RPAREN,
 		.line = reader->line,
@@ -27,6 +31,8 @@ Token token_rparen(Reader *reader) {
 }
 
 Token token_identifier(Reader *reader, char *identifier) {
+	assert(reader);
+
 	return (Token) {
 		.kind = TOK_IDENTIFIER,
 		.line = reader->saved_line,
@@ -36,6 +42,8 @@ Token token_identifier(Reader *reader, char *identifier) {
 }
 
 Token token_string(Reader *reader, char *string) {
+	assert(reader);
+
 	return (Token) {
 		.kind = TOK_STRING,
 		.line = reader->saved_line,
@@ -45,6 +53,8 @@ Token token_string(Reader *reader, char *string) {
 }
 
 Token token_integer(Reader *reader, long value) {
+	assert(reader);
+
 	return (Token) {
 		.kind = TOK_INT,
 		.line = reader->saved_line,
