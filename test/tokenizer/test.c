@@ -10,11 +10,12 @@ int main(int argc, char **argv) {
 	};
 
 	Compiler lllc = {};
-	Token *tokens = tokenize(&lllc, "test.txt");
-	for (size_t i = 0; i < cvec_Token_size(&tokens); i++) {
-		Token token = tokens[i];
+	Token token = {};
+	Tokenizer tokenizer = tokenizer_new(&lllc, "test.txt");
+	do {
+		token = tokenizer_next_token(&tokenizer);
 		assert(token.kind > TOK_MIN && token.kind < TOK_MAX);
 		printf("%u:%u: %s\n", token.line, token.column, token2str[token.kind]);
-	}
+	} while (token.kind != TOK_EOF);
 	return 0;
 }
