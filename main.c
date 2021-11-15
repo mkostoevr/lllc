@@ -7,5 +7,6 @@ Compiler compiler_new(int argc, char **argv) {
 int main(int argc, char **argv) {
 	Compiler lllc = compiler_new(argc, argv);
 	Tokenizer tokenizer = tokenizer_new(&lllc, "test/all.lll");
+	Astificator astificator = astificator_new(&lllc, &tokenizer);
 	return 0;
 }

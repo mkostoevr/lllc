@@ -1,8 +1,9 @@
 #pragma once
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <assert.h>
+#include <stdlib.h>
+#include <string.h>
 #include <stdbool.h>
 
 bool is_alpha(char c);
@@ -45,6 +46,14 @@ typedef enum {
 	TOK_MAX
 } TokenKind;
 
+static char *token_kind_str[TOK_MAX] = {
+	#define ENTRY_STR(token_name) #token_name
+	#define ENTRY(token_name) ENTRY_STR(TOK_ ## token_name)
+	#include "tokentypes.h"
+	#undef ENTRY
+	#undef ENTRY_STR
+};
+
 typedef struct {
 	TokenKind kind;
 	size_t line;
@@ -68,9 +77,50 @@ Token *tokenize(Compiler *lllc, char *file_name);
 #define CVEC_TYPE char
 #include "cvec/cvec.h"
 
+typedef enum {
+	AST_MIN = -1,
+	#define ENTRY(name) AST_ ## name
+	#include "asttypes.h"
+	#undef ENTRY
+	AST_MAX
+} AstNodeKind;
+
+static char *ast_node_kind_str[AST_MAX] = {
+	#define ENTRY_STR(name) #name
+	#define ENTRY(name) ENTRY_STR(AST_ ## name)
+	#include "asttypes.h"
+	#undef ENTRY
+	#undef ENTRY_STR
+};
+
+typedef struct AstNode {
+	AstNodeKind kind;
+	size_t line;
+	size_t column;
+	char *name;
+	struct AstNode *nodes;
+} AstNode;
+
+typedef AstNode *List;
+
+typedef struct Astificator {
+	Tokenizer *tokenizer;
+	List *stack_of_lists;
+} Astificator;
+
+Astificator astificator_new(Compiler *lllc, Tokenizer *tokenizer);
+AstNode astificator_next_node(Astificator *astificator);
+
+#define CVEC_TYPE AstNode
+#include "cvec/cvec.h"
+
+#define CVEC_TYPE List
+#include "cvec/cvec.h"
+
 #ifdef ONE_SOURCE
 #	include "reader.c"
 #	include "ctype.c"
 #	include "tokenizer.c"
+#	include "astificator.c"
 #	include "cvec_inst.c"
 #endif

@@ -1,0 +1,2 @@
+Function: f (a UInt) UInt
+Function: g (a UInt, b UInt) UInt
