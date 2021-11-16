@@ -166,6 +166,7 @@ static AstNode astificator_handle_declaration(Astificator *astificator) {
 	Token last_token = astificator_next_token(astificator);
 	if (last_token.kind != TOK_RPAREN) {
 		astificator_error(astificator, last_token, "Expected ')' at the end of declaration");
+		return ast_eof();
 	}
 	return ast_declaration(name, type);
 }
