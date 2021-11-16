@@ -101,20 +101,14 @@ typedef struct AstNode {
 	struct AstNode *nodes;
 } AstNode;
 
-typedef AstNode *List;
-
 typedef struct Astificator {
 	Tokenizer *tokenizer;
-	List *stack_of_lists;
 } Astificator;
 
 Astificator astificator_new(Compiler *lllc, Tokenizer *tokenizer);
 AstNode astificator_next_node(Astificator *astificator);
 
 #define CVEC_TYPE AstNode
-#include "cvec/cvec.h"
-
-#define CVEC_TYPE List
 #include "cvec/cvec.h"
 
 #ifdef ONE_SOURCE
