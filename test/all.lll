@@ -2,5 +2,5 @@
 
 (import exitProcess "ExitProcess" "KERNEL32.DLL")
 
-(function main (Void) UInt32
+(function main () UInt32
  ((return 0)))
