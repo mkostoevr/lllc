@@ -1,5 +1,37 @@
 #include "main.h"
 
+bool token_is_eof(Token token) {
+	return token.kind == TOK_EOF;
+}
+
+bool token_is_lparen(Token token) {
+	return token.kind == TOK_LPAREN;
+}
+
+bool token_is_rparen(Token token) {
+	return token.kind == TOK_RPAREN;
+}
+
+bool token_is_identifier(Token token) {
+	return token.kind == TOK_IDENTIFIER;
+}
+
+bool token_is_integer(Token token) {
+	return token.kind == TOK_INT;
+}
+
+bool token_is_string(Token token) {
+	return token.kind == TOK_STRING;
+}
+
+bool token_identifier_is(Token token, const char *str) {
+	assert(str);
+	assert(token.identifier);
+
+	return cvec_char_size(&token.identifier) == strlen(str)
+		   && !memcmp(token.identifier, str, strlen(str));
+}
+
 Token token_eof(Reader *reader) {
 	assert(reader);
 

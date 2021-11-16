@@ -1,5 +1,13 @@
 #include "main.h"
 
+bool node_is_eof(AstNode node) {
+	return node.kind == AST_EOF;
+}
+
+bool node_is_list_close(AstNode node) {
+	return node.kind == AST_LIST_CLOSE;
+}
+
 static void astificator_error(const Astificator *astificator, Token token, const char *fmt, ...) {
     va_list args;
     printf("%s:%d:%d: Error: ", astificator->tokenizer->reader.file_name, token.line, token.column);
@@ -119,92 +127,97 @@ static AstNode ast_import(AstNode symbol_name, AstNode imported_name, AstNode dl
 	};
 }
 
+static void astificator_token_expect_kind(Astificator *astificator, Token token, TokenKind kind) {
+	if (token.kind != kind) {
+		astificator_error(astificator, token, "Expected %s, not %s", token_kind_str[kind], token_kind_str[token.kind]);
+	}
+}
+
+static void astificator_token_expect_lparen(Astificator *astificator, Token token) {
+	astificator_token_expect_kind(astificator, token, TOK_LPAREN);
+}
+
 static Token astificator_next_token(Astificator *astificator) {
 	Token token = tokenizer_next_token(astificator->tokenizer);
+	return token;
+}
+
+static Token astificator_next_token_expect_string(Astificator *astificator) {
+	Token token = astificator_next_token(astificator);
+	astificator_token_expect_kind(astificator, token, TOK_STRING);
+	return token;
+}
+
+static Token astificator_next_token_expect_identifier(Astificator *astificator) {
+	Token token = astificator_next_token(astificator);
+	astificator_token_expect_kind(astificator, token, TOK_IDENTIFIER);
+	return token;
+}
+
+static Token astificator_next_token_expect_lparen(Astificator *astificator) {
+	Token token = astificator_next_token(astificator);
+	astificator_token_expect_kind(astificator, token, TOK_LPAREN);
+	return token;
+}
+
+static Token astificator_next_token_expect_rparen(Astificator *astificator) {
+	Token token = astificator_next_token(astificator);
+	astificator_token_expect_kind(astificator, token, TOK_RPAREN);
 	return token;
 }
 
 static AstNode astificator_handle_string(Astificator *astificator) {
 	assert(astificator);
 
-	Token token = astificator_next_token(astificator);
-	if (token.kind != TOK_STRING) {
-		astificator_error(astificator, token, "String expected");
-		return ast_eof();
-	}
+	Token token = astificator_next_token_expect_string(astificator);
 	return ast_string(token);
 }
 
 static AstNode astificator_handle_name(Astificator *astificator) {
-	Token token = astificator_next_token(astificator);
-	if (token.kind != TOK_IDENTIFIER) {
-		astificator_error(astificator, token, "Identifier expected");
-		return ast_eof();
-	}
+	Token token = astificator_next_token_expect_identifier(astificator);
 	return ast_name(token);
 }
 
 static AstNode astificator_handle_type(Astificator *astificator) {
-	Token token = astificator_next_token(astificator);
-	if (token.kind != TOK_IDENTIFIER) {
-		astificator_error(astificator, token, "Type name expected");
-		return ast_eof();
-	}
+	Token token = astificator_next_token_expect_identifier(astificator);
 	return ast_type(token);
 }
 
 static AstNode astificator_handle_declaration(Astificator *astificator) {
 	Token first_token = astificator_next_token(astificator);
-	if (first_token.kind == TOK_RPAREN) {
+	if (token_is_rparen(first_token)) {
 		return ast_close_list(first_token);
 	}
-	if (first_token.kind != TOK_LPAREN) {
-		astificator_error(astificator, first_token, "Declarations should be in parentheses, like so: (name Type)");
-		return ast_eof();
-	}
+	astificator_token_expect_lparen(astificator, first_token);
 	AstNode name = astificator_handle_name(astificator);
 	AstNode type = astificator_handle_type(astificator);
-	Token last_token = astificator_next_token(astificator);
-	if (last_token.kind != TOK_RPAREN) {
-		astificator_error(astificator, last_token, "Expected ')' at the end of declaration");
-		return ast_eof();
-	}
+	Token last_token = astificator_next_token_expect_rparen(astificator);
 	return ast_declaration(name, type);
 }
 
 static AstNode astificator_handle_declaration_list(Astificator *astificator) {
-	Token first_token = astificator_next_token(astificator);
-	if (first_token.kind != TOK_LPAREN) {
-		astificator_error(astificator, first_token, "Declaration list should start with '('");
-		return ast_eof();
-	}
-	AstNode node = {};
+	Token first_token = astificator_next_token_expect_lparen(astificator);
 	AstNode *declarations = cvec_AstNode_new(4);
-	do {
-		node = astificator_handle_declaration(astificator);
-		if (node.kind == AST_LIST_CLOSE) {
+	for (AstNode node; node = astificator_handle_declaration(astificator), true;) {
+		if (node_is_eof(node)) {
+			astificator_error(astificator, first_token, "Unclosed declaration list");
+			return ast_eof();
+		}
+		if (node_is_list_close(node)) {
 			break;
 		}
 		cvec_AstNode_push_back(&declarations, node);
-	} while (node.kind != AST_EOF);
-	if (node.kind == AST_EOF) {
-		astificator_error(astificator, first_token, "Unclosed declaration list");
-		return ast_eof();
 	}
 	return ast_declaration_list(declarations);
 }
 
 static AstNode astificator_handle_function(Astificator *astificator) {
-	Token name_token = astificator_next_token(astificator);
-	if (name_token.kind != TOK_IDENTIFIER) {
-		astificator_error(astificator, name_token, "Expected function name, not %s", token_kind_str[name_token.kind]);
-		return ast_eof();
-	}
+	Token name_token = astificator_next_token_expect_identifier(astificator);
 	AstNode name = ast_name(name_token);
 	AstNode arguments = astificator_handle_declaration_list(astificator);
 	AstNode type = astificator_handle_type(astificator);
 	Token next_token = astificator_next_token(astificator);
-	if (next_token.kind == TOK_RPAREN) {
+	if (token_is_rparen(next_token)) {
 		return ast_function_declaration(name, arguments, type);
 	}
 	astificator_error(astificator, next_token, "Function definition isn't implemented");
@@ -217,36 +230,22 @@ static AstNode astificator_handle_import(Astificator *astificator) {
 	AstNode symbol_name = astificator_handle_name(astificator);
 	AstNode imported_name = astificator_handle_string(astificator);
 	AstNode dll_name = astificator_handle_string(astificator);
-	Token closing_parentheses = astificator_next_token(astificator);
-	if (closing_parentheses.kind != TOK_RPAREN) {
-		astificator_error(astificator, closing_parentheses, "Expected ')' closing the import");
-		return ast_eof();
-	}
+	Token closing_parentheses = astificator_next_token_expect_rparen(astificator);
 	return ast_import(symbol_name, imported_name, dll_name);
 }
 
-static AstNode astificator_handle_root_list(Astificator *astificator) {
+AstNode astificator_next_list(Astificator *astificator) {
 	Token first_token = astificator_next_token(astificator);
-	if (first_token.kind == TOK_IDENTIFIER) {
-		if (!memcmp(first_token.identifier, "function", strlen("function"))) {
-			return astificator_handle_function(astificator);
-		} else if (!memcmp(first_token.identifier, "import", strlen("import"))) {
-			return astificator_handle_import(astificator);
-		}
-	}
-	astificator_error(astificator, first_token, "Only function declaration and definition is implemented");
-	return ast_eof();
-}
-
-AstNode astificator_next_node(Astificator *astificator) {
-	assert(astificator);
-
-	Token first_token = astificator_next_token(astificator);
-	if (first_token.kind == TOK_LPAREN) {
-		return astificator_handle_root_list(astificator);
-	} else if (first_token.kind == TOK_EOF) {
+	if (token_is_eof(first_token)) {
 		return ast_eof();
 	}
-	astificator_error(astificator, first_token, "Root of file can only contain a list");
+	astificator_token_expect_lparen(astificator, first_token);
+	Token second_token = astificator_next_token_expect_identifier(astificator);
+	if (token_identifier_is(second_token, "function")) {
+		return astificator_handle_function(astificator);
+	} else if (token_identifier_is(second_token, "import")) {
+		return astificator_handle_import(astificator);
+	}
+	astificator_error(astificator, second_token, "Only function declaration and definition is implemented");
 	return ast_eof();
 }

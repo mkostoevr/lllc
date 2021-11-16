@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
 	Compiler lllc = {};
 	Tokenizer tokenizer = tokenizer_new(&lllc, "test.lll");
 	Astificator astificator = astificator_new(&lllc, &tokenizer);
-	for (AstNode node; node = astificator_next_node(&astificator), node.kind != AST_EOF;) {
+	for (AstNode node; node = astificator_next_list(&astificator), node.kind != AST_EOF;) {
 		dump_ast_node(node);
 	}
 	return 0;

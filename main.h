@@ -71,6 +71,14 @@ Tokenizer tokenizer_new(Compiler *lllc, char *filename);
 Token tokenizer_next_token(Tokenizer *tokenizer);
 Token *tokenize(Compiler *lllc, char *file_name);
 
+bool token_is_eof(Token token);
+bool token_is_lparen(Token token);
+bool token_is_rparen(Token token);
+bool token_is_identifier(Token token);
+bool token_is_integer(Token token);
+bool token_is_string(Token token);
+bool token_identifier_is(Token token, const char *str);
+
 #define CVEC_TYPE Token
 #include "cvec/cvec.h"
 
@@ -106,7 +114,7 @@ typedef struct Astificator {
 } Astificator;
 
 Astificator astificator_new(Compiler *lllc, Tokenizer *tokenizer);
-AstNode astificator_next_node(Astificator *astificator);
+AstNode astificator_next_list(Astificator *astificator);
 
 #define CVEC_TYPE AstNode
 #include "cvec/cvec.h"
