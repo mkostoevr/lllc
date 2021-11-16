@@ -7,6 +7,7 @@ static void astificator_error(const Astificator *astificator, Token token, const
     vprintf(fmt, args);
     va_end(args);
     printf("\n");
+    exit(-1);
 }
 
 static char *copy_identifier_string(Token token) {
