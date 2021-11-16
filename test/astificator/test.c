@@ -31,11 +31,9 @@ void dump_ast_node(AstNode node) {
 int main(int argc, char **argv) {
 	Compiler lllc = {};
 	Tokenizer tokenizer = tokenizer_new(&lllc, "test.lll");
-	AstNode node = {};
 	Astificator astificator = astificator_new(&lllc, &tokenizer);
-	do {
-		node = astificator_next_node(&astificator);
+	for (AstNode node; node = astificator_next_node(&astificator), node.kind != AST_EOF;) {
 		dump_ast_node(node);
-	} while (node.kind != AST_EOF);
+	}
 	return 0;
 }
