@@ -15,6 +15,12 @@ static char *copy_identifier_string(Token token) {
 	return string;
 }
 
+static char *copy_string_string(Token token) {
+	char *string = cvec_char_new(cvec_char_size(&token.string));
+	cvec_char_assign_range(&string, token.string, token.string + cvec_char_size(&token.string));
+	return string;
+}
+
 Astificator astificator_new(Compiler *lllc, Tokenizer *tokenizer) {
 	Astificator astificator = {};
 	astificator.tokenizer = tokenizer;
@@ -24,6 +30,16 @@ Astificator astificator_new(Compiler *lllc, Tokenizer *tokenizer) {
 static AstNode ast_eof() {
 	return (AstNode) {
 		.kind = AST_EOF,
+	};
+}
+
+static AstNode ast_string(Token token) {
+	char *string = copy_string_string(token);
+	return (AstNode) {
+		.kind = AST_NAME,
+		.line = token.line,
+		.column = token.column,
+		.name = string,
 	};
 }
 
@@ -89,9 +105,33 @@ static AstNode ast_function_declaration(AstNode name, AstNode arguments, AstNode
 	};
 }
 
+static AstNode ast_import(AstNode symbol_name, AstNode imported_name, AstNode dll_name) {
+	AstNode *nodes = cvec_AstNode_new(3);
+	cvec_AstNode_push_back(&nodes, symbol_name);
+	cvec_AstNode_push_back(&nodes, imported_name);
+	cvec_AstNode_push_back(&nodes, dll_name);
+	return (AstNode) {
+		.kind = AST_IMPORT,
+		.line = symbol_name.line,
+		.column = symbol_name.column,
+		.nodes = nodes,
+	};
+}
+
 static Token astificator_next_token(Astificator *astificator) {
 	Token token = tokenizer_next_token(astificator->tokenizer);
 	return token;
+}
+
+static AstNode astificator_handle_string(Astificator *astificator) {
+	assert(astificator);
+
+	Token token = astificator_next_token(astificator);
+	if (token.kind != TOK_STRING) {
+		astificator_error(astificator, token, "String expected");
+		return ast_eof();
+	}
+	return ast_string(token);
 }
 
 static AstNode astificator_handle_name(Astificator *astificator) {
@@ -169,11 +209,27 @@ static AstNode astificator_handle_function(Astificator *astificator) {
 	return ast_eof();
 }
 
+static AstNode astificator_handle_import(Astificator *astificator) {
+	assert(astificator);
+
+	AstNode symbol_name = astificator_handle_name(astificator);
+	AstNode imported_name = astificator_handle_string(astificator);
+	AstNode dll_name = astificator_handle_string(astificator);
+	Token closing_parentheses = astificator_next_token(astificator);
+	if (closing_parentheses.kind != TOK_RPAREN) {
+		astificator_error(astificator, closing_parentheses, "Expected ')' closing the import");
+		return ast_eof();
+	}
+	return ast_import(symbol_name, imported_name, dll_name);
+}
+
 static AstNode astificator_handle_root_list(Astificator *astificator) {
 	Token first_token = astificator_next_token(astificator);
 	if (first_token.kind == TOK_IDENTIFIER) {
 		if (!memcmp(first_token.identifier, "function", strlen("function"))) {
 			return astificator_handle_function(astificator);
+		} else if (!memcmp(first_token.identifier, "import", strlen("import"))) {
+			return astificator_handle_import(astificator);
 		}
 	}
 	astificator_error(astificator, first_token, "Only function declaration and definition is implemented");

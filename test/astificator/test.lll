@@ -1,2 +1,3 @@
 (function f ((a UInt)) UInt)
 (function g ((a UInt) (b UInt)) UInt)
+(import f "f" "f.dll")
