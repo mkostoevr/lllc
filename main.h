@@ -106,6 +106,7 @@ typedef struct AstNode {
 	size_t line;
 	size_t column;
 	char *name;
+	long integer;
 	struct AstNode *nodes;
 } AstNode;
 

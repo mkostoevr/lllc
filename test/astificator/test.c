@@ -29,9 +29,36 @@ void dump_function_declaration(AstNode function_declaration) {
 	printf(") %.*s\n", cvec_char_size(&type.name), type.name);
 }
 
+void dump_expression(AstNode expr) {
+	if (expr.kind == AST_INTEGER) {
+		printf("%d", expr.integer);
+	} else {
+		printf("%s dump isn't implemented\n", ast_node_kind_str[expr.kind]);
+		exit(-1);
+	}
+}
+
+void dump_function_definition(AstNode definition) {
+	dump_function_declaration(definition);
+	printf("Body:\n");
+	for (size_t i = 0; i < cvec_AstNode_size(&definition.nodes[3].nodes); i++) {
+		AstNode function_call = definition.nodes[3].nodes[i];
+		printf("    %.*s(", cvec_char_size(&function_call.name), function_call.name);
+		for (size_t i = 0; i < cvec_AstNode_size(&function_call.nodes); i++) {
+			if (i != 0) {
+				printf(", ");
+			}
+			dump_expression(function_call.nodes[i]);
+		}
+		printf(")\n");
+	}
+}
+
 void dump_ast_node(AstNode node) {
 	if (node.kind == AST_FUNCTION_DECLARATION) {
 		dump_function_declaration(node);
+	} else if (node.kind == AST_FUNCTION_DEFINITION) {
+		dump_function_definition(node);
 	} else if (node.kind == AST_IMPORT) {
 		dump_import(node);
 	} else if (node.kind == AST_EOF) {

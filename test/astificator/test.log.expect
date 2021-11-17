@@ -1,3 +1,7 @@
 Function: f (a UInt) UInt
 Function: g (a UInt, b UInt) UInt
 Import 'f' from 'f.dll' as 'f'
+Function: g (a UInt, b UInt) UInt
+Body:
+    f(0)
+    return(0)
