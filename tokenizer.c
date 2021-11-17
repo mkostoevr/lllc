@@ -122,6 +122,7 @@ Token tokenizer_next_token(Tokenizer *tokenizer) {
 				cvec_char_push_back(&number_string_buffer, c);
 				c = reader_getc(reader);
 			}
+			cvec_char_push_back(&number_string_buffer, '\0');
 			reader_ungetc(reader, c);
 			long value = strtol(number_string_buffer, NULL, 0);
 			cvec_char_free(&number_string_buffer);
