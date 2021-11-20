@@ -70,7 +70,7 @@ void dump_ast_node(AstNode node) {
 
 int main(int argc, char **argv) {
 	Compiler lllc = {};
-	Tokenizer tokenizer = tokenizer_new(&lllc, "test.lll");
+	Tokenizer tokenizer = tokenizer_new(&lllc, argv[1]);
 	Astificator astificator = astificator_new(&lllc, &tokenizer);
 	for (AstNode node; node = astificator_next_list(&astificator), node.kind != AST_EOF;) {
 		dump_ast_node(node);

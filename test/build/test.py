@@ -5,8 +5,8 @@ import os
 sys.path.append('../')
 import common
 
-def run():
-	if os.system("tcc ../../*.c -o lllc.exe") != 0:
+def run(project_root, test_root):
+	if os.system(f"tcc {project_root}/*.c -o lllc.exe") != 0:
 		raise common.TestFailureException()
-	if os.system("tcc ../../main.c -DONE_SOURCE -o lllc.exe") != 0:
+	if os.system(f"tcc {project_root}/main.c -DONE_SOURCE -o lllc.exe") != 0:
 		raise common.TestFailureException()
