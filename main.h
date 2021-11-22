@@ -105,8 +105,33 @@ typedef struct AstNode {
 	AstNodeKind kind;
 	size_t line;
 	size_t column;
+	// NAME: name
+	// TODO: What about TYPE?
+	// FUNCTION_CALL: callee name
 	char *name;
 	long integer;
+	// FUNCTION_DECLARATION:
+	//   name: NAME
+	//   arguments: DECLARATION_LIST
+	//   type: TYPE
+	// FUNCTION_DEFINITION:
+	//   name: NAME
+	//   arguments: DECLARATION_LIST
+	//   type: TYPE
+	//   body: FUNCTION_CALL_LIST
+	// DECLARATION_LIST:
+	//   array of { declaration: DECLARATION }
+	// DECLARATION:
+	//   name: NAME
+	//   type: TYPE
+	// FUNCTION_CALL_LIST:
+	//   array of { function_call: FUNCTION_CALL }
+	// FUNCTION_CALL:
+	//   array of { argument: whatever expression }
+	// IMPORT:
+	//   symbol_name: NAME
+	//   dll_name: NAME
+	//   imported_name: NAME
 	struct AstNode *nodes;
 } AstNode;
 
