@@ -145,10 +145,43 @@ AstNode astificator_next_list(Astificator *astificator);
 #define CVEC_TYPE AstNode
 #include "cvec/cvec.h"
 
+typedef enum {
+	TYPE_FUNCTION,
+	TYPE_UINT32,
+	TYPE_VOID,
+	TYPE_EOF,
+} TypeKind;
+
+typedef struct Type {
+	TypeKind kind;
+	const char *name;
+	struct Type *arguments;
+	struct Type *return_type;
+} Type;
+
+typedef struct Symbol {
+	const char *name;
+	Type type;
+} Symbol;
+
+#define CDICT_VAL_T Symbol
+#define CDICT_INST
+#include "cdict/cdict.h"
+
+typedef struct Ir {
+	Compiler *lllc;
+	Astificator *astificator;
+	CDict_CStr_Symbol symbol_table;
+} Ir;
+
+Ir ir_new(Compiler *lllc, Astificator *astificator);
+Symbol ir_next_symbol(Ir *ir);
+
 #ifdef ONE_SOURCE
 #	include "reader.c"
 #	include "ctype.c"
 #	include "tokenizer.c"
 #	include "astificator.c"
 #	include "cvec_inst.c"
+#	include "ir.c"
 #endif

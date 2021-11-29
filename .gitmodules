@@ -1,3 +1,6 @@
 [submodule "cvec"]
 	path = cvec
 	url = https://github.com/mkostoevr/cvec
+[submodule "cdict"]
+	path = cdict
+	url = https://github.com/mkostoevr/cdict
