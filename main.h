@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <assert.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
@@ -155,8 +156,9 @@ typedef enum {
 typedef struct Type {
 	TypeKind kind;
 	const char *name;
-	struct Type *arguments;
-	struct Type *return_type;
+	// TYPE_FUNCTION:
+	//   returnType[, argumentTypes...]
+	struct Type *types;
 } Type;
 
 typedef struct Symbol {
@@ -167,6 +169,9 @@ typedef struct Symbol {
 #define CDICT_VAL_T Symbol
 #define CDICT_INST
 #include "cdict/cdict.h"
+
+#define CVEC_TYPE Type
+#include "cvec/cvec.h"
 
 typedef struct Ir {
 	Compiler *lllc;
