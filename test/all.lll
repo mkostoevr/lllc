@@ -1,8 +1,8 @@
 (function exitProcess ((exitCode UInt32)) Void)
-(function messageBoxA ((exitCode UInt32)
-                       (exitCode UInt32)
-                       (exitCode UInt32)
-                       (exitCode UInt32)) Void)
+(function messageBoxA ((windowHandle UInt32)
+                       (text UInt32)
+                       (caption UInt32)
+                       (flags UInt32)) UInt32)
 
 (import exitProcess "ExitProcess" "KERNEL32.DLL")
 (import messageBoxA "MessageBoxA" "USER32.DLL")
