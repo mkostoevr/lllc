@@ -131,8 +131,8 @@ typedef struct AstNode {
 	//   array of { argument: whatever expression }
 	// IMPORT:
 	//   symbol_name: NAME
-	//   dll_name: NAME
 	//   imported_name: NAME
+	//   dll_name: NAME
 	struct AstNode *nodes;
 } AstNode;
 
@@ -163,6 +163,8 @@ typedef struct Type {
 
 typedef struct Symbol {
 	const char *name;
+	const char *imported_name;
+	const char *dll_name;
 	Type type;
 } Symbol;
 

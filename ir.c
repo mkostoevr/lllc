@@ -17,7 +17,7 @@ static Type type_function(char *name, Type *arguments, Type return_type) {
 	// First item in the types is return type
 	cvec_Type_push_back(&ret_and_args, return_type);
 	// The next items are argument types
-	for (size_t i = 0; i > cvec_Type_size(&arguments); i++) {
+	for (size_t i = 0; i < cvec_Type_size(&arguments); i++) {
 		cvec_Type_push_back(&ret_and_args, arguments[i]);
 	}
 	return (Type) {
@@ -102,11 +102,32 @@ static void handle_function_declaration(Ir *ir, AstNode node) {
 	cdict_CStr_Symbol_add_vv(&ir->symbol_table, name, new_function, CDICT_NO_CHECK);
 }
 
+Symbol parse_import(Ir *ir, AstNode node) {
+	assert(node.kind == AST_IMPORT);
+	assert(cvec_AstNode_size(&node.nodes) == 3);
+	assert(node.nodes[0].kind == AST_NAME);
+	assert(node.nodes[1].kind == AST_NAME);
+	assert(node.nodes[2].kind == AST_NAME);
+	assert(node.nodes[0].name);
+	assert(node.nodes[1].name);
+	assert(node.nodes[2].name);
+
+	char *symbol_name = node.nodes[0].name;
+	char *imported_name = node.nodes[1].name;
+	char *dll_name = node.nodes[2].name;
+	Symbol symbol = cdict_CStr_Symbol_get_v(&ir->symbol_table, symbol_name);
+	symbol.imported_name = imported_name;
+	symbol.dll_name = dll_name;
+	return symbol;
+}
+
 Symbol ir_next_symbol(Ir *ir) {
 	for (AstNode node; node = astificator_next_list(ir->astificator), node.kind != AST_EOF;) {
 		if (node.kind == AST_FUNCTION_DECLARATION) {
 			handle_function_declaration(ir, node);
 			continue;
+		} else if (node.kind == AST_IMPORT) {
+			return parse_import(ir, node);
 		} else {
 			return ir_error(ir, node, "Can't handle %s", ast_node_kind_str[node.kind]);
 		}

@@ -1,0 +1,2 @@
+["test.dll", "f"] f: function (a: UInt32): UInt32
+["test.dll", "g"] g: function (a: UInt32, b: UInt32): UInt32
