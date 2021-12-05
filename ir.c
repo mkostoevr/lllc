@@ -38,6 +38,28 @@ static Symbol sym_function(char *name, Type *arguments, Type return_type) {
 	};
 }
 
+static Value val_uint32(unsigned long value) {
+	return (Value) {
+		.kind = VAL_UINT32,
+		.uvalue = value,
+	};
+}
+
+static Value val_function_call_list(Value *function_calls) {
+	return (Value) {
+		.kind = VAL_FUNCTION_CALL_LIST,
+		.values = function_calls,
+	};
+}
+
+static Value val_function_call(char *function_name, Value *arguments) {
+	return (Value) {
+		.kind = VAL_FUNCTION_CALL_RESULT,
+		.name = function_name,
+		.values = arguments,
+	};
+}
+
 static Symbol ir_error(const Ir *astificator, AstNode node, const char *fmt, ...) {
     va_list args;
     printf("Error: ");
@@ -92,14 +114,61 @@ static Type *parse_declaration_list(Ir *ir, AstNode node) {
 	return declarations;
 }
 
-static void handle_function_declaration(Ir *ir, AstNode node) {
-	assert(node.kind == AST_FUNCTION_DECLARATION);
+static Value eval_value(Ir *ir, AstNode node) {
+	assert(node.kind == AST_INTEGER);
+
+	if (node.kind == AST_INTEGER) {
+		return val_uint32(node.integer);
+	}
+	assert(("You should never get here", 0));
+}
+
+static Value eval_function_call(Ir *ir, AstNode node) {
+	assert(node.kind == AST_FUNCTION_CALL);
+
+	char *name = node.name;
+	Value *arguments = cvec_Value_new(4);
+	for (size_t i = 0; i < cvec_AstNode_size(&node.nodes); i++) {
+		Value argument = eval_value(ir, node.nodes[0]);
+		cvec_Value_push_back(&arguments, argument);
+	}
+	return val_function_call(name, arguments);
+}
+
+static Value eval_function_call_list(Ir *ir, AstNode node) {
+	assert(node.kind == AST_FUNCTION_CALL_LIST);
+
+	Value *function_calls = cvec_Value_new(8);
+	for (size_t i = 0; i < cvec_AstNode_size(&node.nodes); i++) {
+		Value function_call = eval_function_call(ir, node.nodes[i]);
+		cvec_Value_push_back(&function_calls, function_call);
+	}
+	return val_function_call_list(function_calls);
+}
+
+static Symbol parse_function_declaration(Ir *ir, AstNode node) {
+	assert(node.kind == AST_FUNCTION_DECLARATION
+		|| node.kind == AST_FUNCTION_DEFINITION);
 
 	char *name = node.nodes[0].name;
 	Type *arguments = parse_declaration_list(ir, node.nodes[1]);
 	Type return_type = parse_type(ir, node.nodes[2]);
-	Symbol new_function = sym_function(name, arguments, return_type);
-	cdict_CStr_Symbol_add_vv(&ir->symbol_table, name, new_function, CDICT_NO_CHECK);
+	return sym_function(name, arguments, return_type);
+}
+
+static void handle_function_declaration(Ir *ir, AstNode node) {
+	assert(node.kind == AST_FUNCTION_DECLARATION);
+
+	Symbol func = parse_function_declaration(ir, node);
+	cdict_CStr_Symbol_add_vv(&ir->symbol_table, func.name, func, CDICT_NO_CHECK);
+}
+
+static Symbol parse_function_definition(Ir *ir, AstNode node) {
+	assert(node.kind == AST_FUNCTION_DEFINITION);
+
+	Symbol func = parse_function_declaration(ir, node);
+	func.value = eval_function_call_list(ir, node.nodes[3]);
+	return func;
 }
 
 Symbol parse_import(Ir *ir, AstNode node) {
@@ -126,6 +195,8 @@ Symbol ir_next_symbol(Ir *ir) {
 		if (node.kind == AST_FUNCTION_DECLARATION) {
 			handle_function_declaration(ir, node);
 			continue;
+		} else if (node.kind == AST_FUNCTION_DEFINITION) {
+			return parse_function_definition(ir, node);
 		} else if (node.kind == AST_IMPORT) {
 			return parse_import(ir, node);
 		} else {

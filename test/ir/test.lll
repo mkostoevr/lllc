@@ -3,3 +3,8 @@
 
 (import f "f" "test.dll")
 (import g "g" "test.dll")
+
+(function defined_function ((first UInt32) (second UInt32)) UInt
+ ((f 0)
+  (g 42 24)
+  (return 0)))

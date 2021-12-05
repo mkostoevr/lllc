@@ -161,11 +161,33 @@ typedef struct Type {
 	struct Type *types;
 } Type;
 
+typedef enum {
+	VAL_UNDEFINED,
+	VAL_FUNCTION_CALL_LIST,
+	VAL_FUNCTION_CALL_RESULT,
+	VAL_UINT32,
+} ValueKind;
+
+// VAL_FUNCTION_CALL_RESULT
+//   name: name of the function
+//   values: function call arguments
+// VAL_FUNCTION_CALL_LIST
+//   values: function call results
+// VAL_UINT32:
+//   uvalue: value of the integer
+typedef struct Value {
+	ValueKind kind;
+	char *name;
+	struct Value *values;
+	unsigned long uvalue;
+} Value;
+
 typedef struct Symbol {
-	const char *name;
+	char *name;
 	const char *imported_name;
 	const char *dll_name;
 	Type type;
+	Value value;
 } Symbol;
 
 #define CDICT_VAL_T Symbol
@@ -173,6 +195,9 @@ typedef struct Symbol {
 #include "cdict/cdict.h"
 
 #define CVEC_TYPE Type
+#include "cvec/cvec.h"
+
+#define CVEC_TYPE Value
 #include "cvec/cvec.h"
 
 typedef struct Ir {

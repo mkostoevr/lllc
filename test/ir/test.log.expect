@@ -1,2 +1,10 @@
 ["test.dll", "f"] f: function (a: UInt32): UInt32
+
 ["test.dll", "g"] g: function (a: UInt32, b: UInt32): UInt32
+
+defined_function: function (first: UInt32, second: UInt32): UInt32 = {
+    f(0);
+    g(42, 42);
+    return(0);
+}
+

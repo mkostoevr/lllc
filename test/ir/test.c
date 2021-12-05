@@ -1,9 +1,10 @@
 #define ONE_SOURCE
 #include "../../main.h"
 
-static void dump_symbol(Symbol sym);
-static void dump_type(Type type);
 static void dump_type_function(Type type);
+static void dump_value(Value value);
+static void dump_type(Type type);
+static void dump_symbol(Symbol sym);
 
 static void dump_type_function(Type type) {
 	Type *arguments = type.types;
@@ -19,6 +20,28 @@ static void dump_type_function(Type type) {
 	}
 	printf("): ");
 	dump_type(return_type);
+}
+
+static void dump_value(Value value) {
+	if (value.kind == VAL_UINT32) {
+		printf("%d", value.uvalue);
+	} else if (value.kind == VAL_FUNCTION_CALL_RESULT) {
+		printf("%.*s(", cvec_char_size(&value.name), value.name);
+		for (size_t i = 0; i < cvec_Value_size(&value.values); i++) {
+			if (i != 0) {
+				printf(", ");
+			}
+			dump_value(value.values[i]);
+		}
+		printf(");\n");
+	} else if (value.kind == VAL_FUNCTION_CALL_LIST) {
+		printf("{\n");
+		for (size_t i = 0; i < cvec_Value_size(&value.values); i++) {
+			printf("    ");
+			dump_value(value.values[i]);
+		}
+		printf("}");
+	}
 }
 
 static void dump_type(Type type) {
@@ -45,7 +68,11 @@ static void dump_symbol(Symbol sym) {
 	}
 	printf("%.*s: ", cvec_char_size(&name), name);
 	dump_type(sym.type);
-	printf("\n");
+	if (sym.value.kind != VAL_UNDEFINED) {
+		printf(" = ");
+		dump_value(sym.value);
+	}
+	printf("\n\n");
 }
 
 int main(int argc, char **argv) {
