@@ -83,9 +83,9 @@ static Type parse_type(Ir *ir, AstNode node) {
 	assert(node.kind == AST_TYPE);
 	assert(node.name);
 
-	if (!memcmp(node.name, "UInt32", cvec_char_size(&node.name))) {
+	if (!strcmp(node.name, "UInt32")) {
 		return type_uint32();
-	} else if (!memcmp(node.name, "Void", cvec_char_size(&node.name))) {
+	} else if (!strcmp(node.name, "Void")) {
 		return type_void();
 	}
 	ir_error(ir, node, "Undefined type name: %s", node.name);

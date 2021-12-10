@@ -1,10 +1,10 @@
-(function f ((a UInt)) UInt)
-(function g ((a UInt) (b UInt)) UInt)
+(function f ((a UInt32)) UInt32)
+(function g ((a UInt32) (b UInt32)) UInt32)
 
 (import f "f" "test.dll")
 (import g "g" "test.dll")
 
-(function defined_function ((first UInt32) (second UInt32)) UInt
+(function defined_function ((first UInt32) (second UInt32)) UInt32
  ((f 0)
   (g 42 24)
   (return 0)))

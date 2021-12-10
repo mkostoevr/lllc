@@ -21,12 +21,14 @@ static void astificator_error(const Astificator *astificator, Token token, const
 static char *copy_identifier_string(Token token) {
 	char *string = cvec_char_new(cvec_char_size(&token.identifier));
 	cvec_char_assign_range(&string, token.identifier, token.identifier + cvec_char_size(&token.identifier));
+	cvec_char_push_back(&string, '\0');
 	return string;
 }
 
 static char *copy_string_string(Token token) {
 	char *string = cvec_char_new(cvec_char_size(&token.string));
 	cvec_char_assign_range(&string, token.string, token.string + cvec_char_size(&token.string));
+	cvec_char_push_back(&string, '\0');
 	return string;
 }
 
