@@ -9,6 +9,13 @@
 #include <string.h>
 #include <stdbool.h>
 
+#define not_null(x) ({ typeof(x) _x = (x); assert(_x); _x; })
+
+typedef const char *pcchar;
+
+#define CVEC_TYPE pcchar
+#include "cvec/cvec.h"
+
 bool is_alpha(char c);
 bool is_digit(char c);
 bool is_id_begin(char c);
@@ -17,7 +24,7 @@ bool is_space(char c);
 
 typedef struct {
 	// Generic stuff for current compiler instance
-	size_t something;
+	const char *output_file_name;
 } Compiler;
 
 Compiler compiler_new();
@@ -211,6 +218,8 @@ typedef struct Ir {
 Ir ir_new(Compiler *lllc, Astificator *astificator);
 Symbol ir_next_symbol(Ir *ir);
 
+int gen_win32fasm(Compiler *lllc, Ir *ir);
+
 #ifdef ONE_SOURCE
 #	include "reader.c"
 #	include "ctype.c"
@@ -218,4 +227,5 @@ Symbol ir_next_symbol(Ir *ir);
 #	include "astificator.c"
 #	include "cvec_inst.c"
 #	include "ir.c"
+#	include "gen_win32fasm.c"
 #endif

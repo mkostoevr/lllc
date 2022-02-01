@@ -16,6 +16,10 @@
 #define CVEC_INST
 #include "cvec/cvec.h"
 
+#define CVEC_TYPE pcchar
+#define CVEC_INST
+#include "cvec/cvec.h"
+
 #define CVEC_TYPE AstNode
 #define CVEC_INST
 #include "cvec/cvec.h"

@@ -1,4 +1,5 @@
 *.bat
 *.exe
 *.log
+*.asm
 __pycache__

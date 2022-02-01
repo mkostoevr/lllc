@@ -1,0 +1,39 @@
+format PE GUI
+entry main
+
+section '.text' code readable executable
+
+main:
+    push 0
+    push 0
+    push 0
+    push 0
+    call [messageBoxA]
+
+    push 0
+    call [exitProcess]
+
+
+
+section '.idata' import data readable writeable
+
+dd 0,0,0,RVA KERNEL32.DLL_name,RVA KERNEL32.DLL_table
+dd 0,0,0,RVA USER32.DLL_name,RVA USER32.DLL_table
+dd 0,0,0,0,0
+
+KERNEL32.DLL_table:
+  exitProcess dd RVA _exitProcess
+  dd 0
+
+USER32.DLL_table:
+  messageBoxA dd RVA _messageBoxA
+  dd 0
+
+KERNEL32.DLL_name db 'KERNEL32.DLL',0
+USER32.DLL_name db 'USER32.DLL',0
+
+_exitProcess dw 0
+  db 'ExitProcess',0
+_messageBoxA dw 0
+  db 'MessageBoxA',0
+

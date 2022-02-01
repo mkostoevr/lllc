@@ -1,0 +1,12 @@
+(function exitProcess ((exitCode UInt32)) Void)
+(function messageBoxA ((windowHandle UInt32)
+                       (text UInt32)
+                       (caption UInt32)
+                       (flags UInt32)) UInt32)
+
+(import exitProcess "ExitProcess" "KERNEL32.DLL")
+(import messageBoxA "MessageBoxA" "USER32.DLL")
+
+(function main () UInt32
+ ((messageBoxA 0 0 0 0)
+  (exitProcess 0)))
