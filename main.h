@@ -175,6 +175,7 @@ typedef enum {
 	VAL_FUNCTION_CALL_LIST,
 	VAL_FUNCTION_CALL_RESULT,
 	VAL_UINT32,
+	VAL_STRING,
 } ValueKind;
 
 // VAL_FUNCTION_CALL_RESULT
@@ -184,6 +185,8 @@ typedef enum {
 //   values: function call results
 // VAL_UINT32:
 //   uvalue: value of the integer
+// VAL_STRING:
+//   name: the string
 typedef struct Value {
 	ValueKind kind;
 	char *name;

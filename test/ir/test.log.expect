@@ -4,7 +4,7 @@
 
 defined_function: function (first: UInt32, second: UInt32): UInt32 = {
     f(0);
-    g(42, 42);
+    g(42, 24);
     return(0);
 }
 

@@ -12,6 +12,7 @@ typedef struct {
 
 typedef struct {
 	char *code;
+	char *data;
 	Import *imports;
 } Output;
 
@@ -37,20 +38,31 @@ static void outf(char **output, const char *fmt, ...) {
 
 static void gen_symbol(Symbol sym, Output *output);
 
-static void gen_value(Value value, char **output) {
+static int create_string_data(Output *output, char *string) {
+	assert(output);
+	assert(string);
+
+	static int id = 0;
+	outf(&output->data, "  __string__%d db '%.*s',0\n", id, cvec_char_size(&string), string);
+	return id++;
+}
+
+static void gen_value(Output *s, Value value, char **output) {
 	assert(output);
 	assert(*output);
 
 	if (value.kind == VAL_UINT32) {
 		outf(output, "    push %d\n", value.uvalue);
+	} else if (value.kind == VAL_STRING) {
+		outf(output, "    push __string__%d\n", create_string_data(s, value.name));
 	} else if (value.kind == VAL_FUNCTION_CALL_RESULT) {
 		for (size_t i = 0; i < cvec_Value_size(&value.values); i++) {
-			gen_value(value.values[i], output);
+			gen_value(s, value.values[i], output);
 		}
 		outf(output, "    call [%.*s]\n\n", cvec_char_size(&value.name), value.name);
 	} else if (value.kind == VAL_FUNCTION_CALL_LIST) {
 		for (size_t i = 0; i < cvec_Value_size(&value.values); i++) {
-			gen_value(value.values[i], output);
+			gen_value(s, value.values[i], output);
 		}
 	} else {
 		printf("Unexpected value kind: %d\n", value.kind);
@@ -58,14 +70,14 @@ static void gen_value(Value value, char **output) {
 	}
 }
 
-static void gen_function(Symbol sym, char **output) {
+static void gen_function(Symbol sym, Output *output) {
 	assert(output);
-	assert(*output);
 
+	char **output_code = &output->code;
 	const char *name = not_null(sym.name);
-	outf(output, "%.*s:\n", (int)cvec_char_size(&name), name);
-	gen_value(sym.value, output);
-	outf(output, "\n");
+	outf(output_code, "%.*s:\n", (int)cvec_char_size(&name), name);
+	gen_value(output, sym.value, output_code);
+	outf(output_code, "\n");
 }
 
 static void gen_imported_symbol(Symbol sym, Output *output) {
@@ -88,7 +100,7 @@ static void gen_symbol(Symbol sym, Output *output) {
 	if (sym.imported_name != NULL) {
 		gen_imported_symbol(sym, output);
 	} else if (sym.type.kind == TYPE_FUNCTION) {
-		gen_function(sym, &output->code);
+		gen_function(sym, output);
 	} else {
 		printf("Only function and import generation is implemented!\n");
 		exit(1);
@@ -170,6 +182,7 @@ int gen_win32fasm(Compiler *lllc, Ir *ir) {
 
 	Output output = {
 		.code = not_null(cvec_char_new(32)),
+		.data = not_null(cvec_char_new(1024)),
 		.imports = not_null(cvec_Import_new(8)),
 	};
 
@@ -184,6 +197,8 @@ int gen_win32fasm(Compiler *lllc, Ir *ir) {
 	outf(&result, "entry main\n\n");
 	outf(&result, "section '.text' code readable executable\n\n");
 	outf(&result, "%.*s\n", cvec_char_size(&output.code), output.code);
+	outf(&result, "section '.data' data readable writeable\n\n");
+	outf(&result, "%.*s\n", cvec_char_size(&output.data), output.data);
 	outf(&result, "section '.idata' import data readable writeable\n\n");
 	outf(&result, "%.*s\n", cvec_char_size(&idata), idata);
 

@@ -45,6 +45,13 @@ static Value val_uint32(unsigned long value) {
 	};
 }
 
+static Value val_string(AstNode node) {
+	return (Value) {
+		.kind = VAL_STRING,
+		.name = node.name,
+	};
+}
+
 static Value val_function_call_list(Value *function_calls) {
 	return (Value) {
 		.kind = VAL_FUNCTION_CALL_LIST,
@@ -115,12 +122,16 @@ static Type *parse_declaration_list(Ir *ir, AstNode node) {
 }
 
 static Value eval_value(Ir *ir, AstNode node) {
-	assert(node.kind == AST_INTEGER);
+	assert(node.kind == AST_INTEGER
+		|| node.kind == AST_NAME);
 
 	if (node.kind == AST_INTEGER) {
 		return val_uint32(node.integer);
+	} else if (node.kind == AST_NAME) {
+		return val_string(node);
+	} else {
+		assert(("You should never get here", 0));
 	}
-	assert(("You should never get here", 0));
 }
 
 static Value eval_function_call(Ir *ir, AstNode node) {
@@ -129,7 +140,7 @@ static Value eval_function_call(Ir *ir, AstNode node) {
 	char *name = node.name;
 	Value *arguments = cvec_Value_new(4);
 	for (size_t i = 0; i < cvec_AstNode_size(&node.nodes); i++) {
-		Value argument = eval_value(ir, node.nodes[0]);
+		Value argument = eval_value(ir, node.nodes[i]);
 		cvec_Value_push_back(&arguments, argument);
 	}
 	return val_function_call(name, arguments);

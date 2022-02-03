@@ -213,15 +213,20 @@ static Token astificator_next_token_expect_rparen(Astificator *astificator) {
 	return token;
 }
 
-static AstNode astificator_handle_number(Astificator *astificator) {
+static AstNode astificator_handle_value(Astificator *astificator) {
 	assert(astificator);
 
 	Token first_token = astificator_next_token(astificator);
 	if (token_is_rparen(first_token)) {
 		return ast_close_list(first_token);
+	} else if (token_is_integer(first_token)) {
+		return ast_integer(first_token);
+	} else if (token_is_string(first_token)) {
+		return ast_string(first_token);
+	} else {
+		astificator_error(astificator, first_token, "Only integer arguments supported");
+		return ast_eof();
 	}
-	astificator_token_expect_integer(astificator, first_token);
-	return ast_integer(first_token);
 }
 
 static AstNode astificator_handle_string(Astificator *astificator) {
@@ -277,7 +282,7 @@ static AstNode astificator_handle_function_call(Astificator *astificator) {
 	astificator_token_expect_lparen(astificator, first_token);
 	AstNode name = astificator_handle_name(astificator);
 	AstNode *arguments = cvec_AstNode_new(2);
-	for (AstNode node; node = astificator_handle_number(astificator), true;) {
+	for (AstNode node; node = astificator_handle_value(astificator), true;) {
 		if (node_is_eof(node)) {
 			astificator_error(astificator, first_token, "Unclosed function body");
 			return ast_eof();

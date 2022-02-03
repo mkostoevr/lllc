@@ -5,8 +5,8 @@ section '.text' code readable executable
 
 main:
     push 0
-    push 0
-    push 0
+    push __string__0
+    push __string__1
     push 0
     call [messageBoxA]
 
@@ -14,6 +14,11 @@ main:
     call [exitProcess]
 
 
+
+section '.data' data readable writeable
+
+  __string__0 db 'Hello, world!',0
+  __string__1 db 'Test',0
 
 section '.idata' import data readable writeable
 

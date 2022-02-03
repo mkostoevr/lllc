@@ -8,5 +8,5 @@
 (import messageBoxA "MessageBoxA" "USER32.DLL")
 
 (function main () UInt32
- ((messageBoxA 0 0 0 0)
+ ((messageBoxA 0 "Hello, world!" "Test" 0)
   (exitProcess 0)))
