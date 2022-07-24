@@ -284,7 +284,7 @@ static AstNode astificator_handle_function_call(Astificator *astificator) {
 	AstNode *arguments = cvec_AstNode_new(2);
 	for (AstNode node; node = astificator_handle_value(astificator), true;) {
 		if (node_is_eof(node)) {
-			astificator_error(astificator, first_token, "Unclosed function body");
+			astificator_error(astificator, first_token, "Unclosed function call");
 			return ast_eof();
 		}
 		if (node_is_list_close(node)) {
