@@ -9,4 +9,7 @@
 
 (function main () UInt32
  ((messageBoxA 0 "Text" "Caption" 0)
+  (if (128)
+   ((messageBoxA 0 "0" "Condition" 0))
+   ((messageBoxA 0 "Not 0" "Condition" 0)))
   (exitProcess 0)))
