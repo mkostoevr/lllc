@@ -295,11 +295,11 @@ static AstNode astificator_handle_function_call(Astificator *astificator) {
 	return ast_function_call(name, arguments);
 }
 
-static AstNode astificator_handle_function_body(Astificator *astificator, Token first_token) {
+static AstNode astificator_handle_function_call_list(Astificator *astificator, Token lparen) {
 	AstNode *list = cvec_AstNode_new(8);
 	for (AstNode node; node = astificator_handle_function_call(astificator), true;) {
 		if (node_is_eof(node)) {
-			astificator_error(astificator, first_token, "Unclosed function body");
+			astificator_error(astificator, lparen, "Unclosed function call list");
 			return ast_eof();
 		}
 		if (node_is_list_close(node)) {
@@ -308,6 +308,10 @@ static AstNode astificator_handle_function_body(Astificator *astificator, Token 
 		cvec_AstNode_push_back(&list, node);
 	}
 	return ast_function_call_list(list);
+}
+
+static AstNode astificator_handle_function_body(Astificator *astificator, Token first_token) {
+	return astificator_handle_function_call_list(astificator, first_token);
 }
 
 static AstNode astificator_handle_function(Astificator *astificator) {
