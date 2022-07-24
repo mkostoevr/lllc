@@ -148,8 +148,8 @@ static AstNode ast_import(AstNode symbol_name, AstNode imported_name, AstNode dl
 static AstNode ast_function_call_list(AstNode *calls) {
 	return (AstNode) {
 		.kind = AST_FUNCTION_CALL_LIST,
-		.line = 999,
-		.column = 999,
+		.line = calls[0].line,
+		.column = calls[0].column,
 		.nodes = calls,
 	};
 }
