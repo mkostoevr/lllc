@@ -1,11 +1,17 @@
 #include "main.h"
 
+static AstNode astificator_handle_function_call_list(Astificator *astificator, Token lparen);
+
 bool node_is_eof(AstNode node) {
 	return node.kind == AST_EOF;
 }
 
 bool node_is_list_close(AstNode node) {
 	return node.kind == AST_LIST_CLOSE;
+}
+
+bool ast_name_is(AstNode name, const char *needle) {
+	return !strcmp(name.name, needle);
 }
 
 static void astificator_error(const Astificator *astificator, Token token, const char *fmt, ...) {
@@ -164,6 +170,24 @@ static AstNode ast_function_call(AstNode name, AstNode *arguments) {
 	};
 }
 
+static AstNode ast_if_then(AstNode keyword, AstNode condition, AstNode then_code) {
+	AstNode *nodes = cvec_AstNode_new(2);
+	cvec_AstNode_push_back(&nodes, condition);
+	cvec_AstNode_push_back(&nodes, then_code);
+	return (AstNode) {
+		.kind = AST_IF,
+		.line = keyword.line,
+		.column = keyword.column,
+		.nodes = nodes,
+	};
+}
+
+static AstNode ast_if_then_else(AstNode keyword, AstNode condition, AstNode then_code, AstNode else_code) {
+	AstNode if_node = ast_if_then(keyword, condition, then_code);
+	cvec_AstNode_push_back(&if_node.nodes, else_code);
+	return if_node;
+}
+
 static void astificator_token_expect_kind(Astificator *astificator, Token token, TokenKind kind) {
 	if (token.kind != kind) {
 		astificator_error(astificator, token, "Expected %s, not %s", token_kind_str[kind], token_kind_str[token.kind]);
@@ -281,18 +305,32 @@ static AstNode astificator_handle_function_call(Astificator *astificator) {
 	}
 	astificator_token_expect_lparen(astificator, first_token);
 	AstNode name = astificator_handle_name(astificator);
-	AstNode *arguments = cvec_AstNode_new(2);
-	for (AstNode node; node = astificator_handle_value(astificator), true;) {
-		if (node_is_eof(node)) {
-			astificator_error(astificator, first_token, "Unclosed function call");
-			return ast_eof();
+	if (ast_name_is(name, "if")) {
+		AstNode condition = astificator_handle_function_call(astificator);
+		Token then_code_lparen = astificator_next_token_expect_lparen(astificator);
+		AstNode then_code = astificator_handle_function_call_list(astificator, then_code_lparen);
+		Token token_after_then_code = astificator_next_token(astificator);
+		if (token_is_rparen(token_after_then_code)) {
+			return ast_if_then(name, condition, then_code);
+		} else {
+			AstNode else_code = astificator_handle_function_call_list(astificator, token_after_then_code);
+			Token if_closing_paren = astificator_next_token_expect_rparen(astificator);
+			return ast_if_then_else(name, condition, then_code, else_code);
 		}
-		if (node_is_list_close(node)) {
-			break;
+	} else {
+		AstNode *arguments = cvec_AstNode_new(2);
+		for (AstNode node; node = astificator_handle_value(astificator), true;) {
+			if (node_is_eof(node)) {
+				astificator_error(astificator, first_token, "Unclosed function call");
+				return ast_eof();
+			}
+			if (node_is_list_close(node)) {
+				break;
+			}
+			cvec_AstNode_push_back(&arguments, node);
 		}
-		cvec_AstNode_push_back(&arguments, node);
+		return ast_function_call(name, arguments);
 	}
-	return ast_function_call(name, arguments);
 }
 
 static AstNode astificator_handle_function_call_list(Astificator *astificator, Token lparen) {
