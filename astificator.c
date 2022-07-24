@@ -306,7 +306,9 @@ static AstNode astificator_handle_function_call(Astificator *astificator) {
 	astificator_token_expect_lparen(astificator, first_token);
 	AstNode name = astificator_handle_name(astificator);
 	if (ast_name_is(name, "if")) {
-		AstNode condition = astificator_handle_function_call(astificator);
+		astificator_next_token_expect_lparen(astificator);
+		AstNode condition = astificator_handle_value(astificator);
+		astificator_next_token_expect_rparen(astificator);
 		Token then_code_lparen = astificator_next_token_expect_lparen(astificator);
 		AstNode then_code = astificator_handle_function_call_list(astificator, then_code_lparen);
 		Token token_after_then_code = astificator_next_token(astificator);
