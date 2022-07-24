@@ -158,19 +158,3 @@ Token tokenizer_next_token(Tokenizer *tokenizer) {
 	}
 	return token_eof(reader);
 }
-
-Token *tokenize(Compiler *lllc, char *file_name) {
-	assert(lllc);
-	assert(file_name);
-
-	Tokenizer tokenizer = tokenizer_new(lllc, file_name);
-	Token *tokens = cvec_Token_new(1024);
-	Token next_token = {};
-
-	do {
-		next_token = tokenizer_next_token(&tokenizer);
-		cvec_Token_push_back(&tokens, next_token);
-	} while (next_token.kind != TOK_EOF);
-
-	return tokens;
-}
