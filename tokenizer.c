@@ -32,7 +32,7 @@ bool token_identifier_is(Token token, const char *str) {
 		   && !memcmp(token.identifier, str, strlen(str));
 }
 
-Token token_eof(Reader *reader) {
+static Token token_eof(Reader *reader) {
 	assert(reader);
 
 	return (Token) {
@@ -42,7 +42,7 @@ Token token_eof(Reader *reader) {
 	};
 }
 
-Token token_lparen(Reader *reader) {
+static Token token_lparen(Reader *reader) {
 	assert(reader);
 
 	return (Token) {
@@ -52,7 +52,7 @@ Token token_lparen(Reader *reader) {
 	};
 }
 
-Token token_rparen(Reader *reader) {
+static Token token_rparen(Reader *reader) {
 	assert(reader);
 
 	return (Token) {
@@ -62,7 +62,7 @@ Token token_rparen(Reader *reader) {
 	};
 }
 
-Token token_identifier(Reader *reader, char *identifier) {
+static Token token_identifier(Reader *reader, char *identifier) {
 	assert(reader);
 
 	return (Token) {
@@ -73,7 +73,7 @@ Token token_identifier(Reader *reader, char *identifier) {
 	};
 }
 
-Token token_string(Reader *reader, char *string) {
+static Token token_string(Reader *reader, char *string) {
 	assert(reader);
 
 	return (Token) {
@@ -84,7 +84,7 @@ Token token_string(Reader *reader, char *string) {
 	};
 }
 
-Token token_integer(Reader *reader, long value) {
+static Token token_integer(Reader *reader, long value) {
 	assert(reader);
 
 	return (Token) {
