@@ -23,7 +23,7 @@ Just declares that there's some function existing somewhere.
 Example:
 
 ```C
-(function main ((argc Int), (argv *Char)) Int)
+(function main ((argc Int) (argv *Char)) Int)
 ```
 
 #### Function definition
