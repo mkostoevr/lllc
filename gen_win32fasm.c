@@ -16,6 +16,8 @@ typedef struct {
 	Import *imports;
 } Output;
 
+static unsigned long unique_id = 0;
+
 static void outf(char **output, const char *fmt, ...) {
 	assert(output);
 	assert(*output);
@@ -42,9 +44,9 @@ static int create_string_data(Output *output, char *string) {
 	assert(output);
 	assert(string);
 
-	static int id = 0;
+	int id = unique_id++;
 	outf(&output->data, "  __string__%d db '%.*s',0\n", id, cvec_char_size(&string), string);
-	return id++;
+	return id;
 }
 
 static void gen_value(Output *s, Value value, char **output) {
@@ -64,6 +66,22 @@ static void gen_value(Output *s, Value value, char **output) {
 		for (size_t i = 0; i < cvec_Value_size(&value.values); i++) {
 			gen_value(s, value.values[i], output);
 		}
+	} else if (value.kind == VAL_IF) {
+		Value condition = value.values[0];
+		unsigned long if_id = unique_id++;
+		gen_value(s, condition, output);
+		outf(output, "    pop eax\n");
+		outf(output, "    test eax, eax\n");
+		outf(output, "    jz .if%d.else\n\n", if_id);
+		Value then_code = value.values[1];
+		gen_value(s, then_code, output);
+		outf(output, "    jmp .if%d.end\n\n", if_id);
+		outf(output, ".if%d.else:\n", if_id);
+		if (cvec_Value_size(&value.values) == 3) {
+			Value else_code = value.values[2];
+			gen_value(s, else_code, output);
+		}
+		outf(output, ".if%d.end:\n\n", if_id);
 	} else {
 		printf("Unexpected value kind: %d\n", value.kind);
 		exit(-1);
