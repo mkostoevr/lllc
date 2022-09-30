@@ -141,11 +141,11 @@ static Type *parse_declaration_list(Ir *ir, AstNode node) {
 
 static Value eval_value(Ir *ir, AstNode node) {
 	assert(node.kind == AST_INTEGER
-		|| node.kind == AST_NAME);
+		|| node.kind == AST_STRING);
 
 	if (node.kind == AST_INTEGER) {
 		return val_uint32(node.integer);
-	} else if (node.kind == AST_NAME) {
+	} else if (node.kind == AST_STRING) {
 		return val_string(node);
 	} else {
 		assert(("You should never get here", 0));
@@ -215,8 +215,8 @@ Symbol parse_import(Ir *ir, AstNode node) {
 	assert(node.kind == AST_IMPORT);
 	assert(cvec_AstNode_size(&node.nodes) == 3);
 	assert(node.nodes[0].kind == AST_NAME);
-	assert(node.nodes[1].kind == AST_NAME);
-	assert(node.nodes[2].kind == AST_NAME);
+	assert(node.nodes[1].kind == AST_STRING);
+	assert(node.nodes[2].kind == AST_STRING);
 	assert(node.nodes[0].name);
 	assert(node.nodes[1].name);
 	assert(node.nodes[2].name);

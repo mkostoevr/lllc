@@ -62,7 +62,7 @@ static AstNode ast_integer(Token token) {
 static AstNode ast_string(Token token) {
 	char *string = copy_string_string(token);
 	return (AstNode) {
-		.kind = AST_NAME,
+		.kind = AST_STRING,
 		.line = token.line,
 		.column = token.column,
 		.name = string,
