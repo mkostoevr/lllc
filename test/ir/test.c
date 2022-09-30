@@ -2,7 +2,7 @@
 #include "../../main.h"
 
 static void dump_type_function(Type type);
-static void dump_value(Value value);
+static void dump_value(Value value, int i);
 static void dump_type(Type type);
 static void dump_symbol(Symbol sym);
 
@@ -22,7 +22,13 @@ static void dump_type_function(Type type) {
 	dump_type(return_type);
 }
 
-static void dump_value(Value value) {
+static void indent(int i) {
+	while (i--) {
+		printf("    ");
+	}
+}
+
+static void dump_value(Value value, int _i) {
 	if (value.kind == VAL_UINT32) {
 		printf("%d", value.uvalue);
 	} else if (value.kind == VAL_FUNCTION_CALL_RESULT) {
@@ -31,16 +37,33 @@ static void dump_value(Value value) {
 			if (i != 0) {
 				printf(", ");
 			}
-			dump_value(value.values[i]);
+			dump_value(value.values[i], _i + 1);
 		}
 		printf(");\n");
 	} else if (value.kind == VAL_FUNCTION_CALL_LIST) {
 		printf("{\n");
 		for (size_t i = 0; i < cvec_Value_size(&value.values); i++) {
-			printf("    ");
-			dump_value(value.values[i]);
+			indent(_i + 1);
+			dump_value(value.values[i], _i + 1);
 		}
+		indent(_i);
 		printf("}");
+	} else if (value.kind == VAL_IF) {
+		Value condition = value.values[0];
+		Value then_code = value.values[1];
+
+		printf("if (");
+		dump_value(condition, _i);
+		printf(") ");
+		dump_value(then_code, _i);
+		if (cvec_Value_size(&value.values) == 3) {
+			Value else_code = value.values[2];
+			printf(" else ");
+			dump_value(else_code, _i);
+		}
+		printf("\n");
+	} else {
+		assert(("You should never get here", 0));
 	}
 }
 
@@ -70,7 +93,7 @@ static void dump_symbol(Symbol sym) {
 	dump_type(sym.type);
 	if (sym.value.kind != VAL_UNDEFINED) {
 		printf(" = ");
-		dump_value(sym.value);
+		dump_value(sym.value, 0);
 	}
 	printf("\n\n");
 }
