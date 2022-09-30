@@ -54,14 +54,14 @@ static void gen_value(Output *s, Value value, char **output) {
 	assert(*output);
 
 	if (value.kind == VAL_UINT32) {
-		outf(output, "    push %d\n", value.uvalue);
+		outf(output, "  push %d\n", value.uvalue);
 	} else if (value.kind == VAL_STRING) {
-		outf(output, "    push __string__%d\n", create_string_data(s, value.name));
+		outf(output, "  push __string__%d\n", create_string_data(s, value.name));
 	} else if (value.kind == VAL_FUNCTION_CALL_RESULT) {
 		for (size_t i = 0; i < cvec_Value_size(&value.values); i++) {
 			gen_value(s, value.values[i], output);
 		}
-		outf(output, "    call [%.*s]\n\n", cvec_char_size(&value.name), value.name);
+		outf(output, "  call [%.*s]\n\n", cvec_char_size(&value.name), value.name);
 	} else if (value.kind == VAL_FUNCTION_CALL_LIST) {
 		for (size_t i = 0; i < cvec_Value_size(&value.values); i++) {
 			gen_value(s, value.values[i], output);
@@ -70,18 +70,18 @@ static void gen_value(Output *s, Value value, char **output) {
 		Value condition = value.values[0];
 		unsigned long if_id = unique_id++;
 		gen_value(s, condition, output);
-		outf(output, "    pop eax\n");
-		outf(output, "    test eax, eax\n");
-		outf(output, "    jz .if%d.else\n\n", if_id);
+		outf(output, "  pop eax\n");
+		outf(output, "  test eax, eax\n");
+		outf(output, "  jz .if%d.else\n\n", if_id);
 		Value then_code = value.values[1];
 		gen_value(s, then_code, output);
-		outf(output, "    jmp .if%d.end\n\n", if_id);
+		outf(output, "  jmp .if%d.end\n\n", if_id);
 		outf(output, ".if%d.else:\n", if_id);
 		if (cvec_Value_size(&value.values) == 3) {
 			Value else_code = value.values[2];
 			gen_value(s, else_code, output);
 		}
-		outf(output, ".if%d.end:\n\n", if_id);
+		outf(output, ".if%d.end:\n", if_id);
 	} else {
 		printf("Unexpected value kind: %d\n", value.kind);
 		exit(-1);
