@@ -55,6 +55,11 @@ static Value val_string(AstNode node) {
 }
 
 static Value val_function_call_list(Value *function_calls) {
+	for (size_t i = 0; i < cvec_Value_size(&function_calls); i++) {
+		Value function_call = function_calls[i];
+		assert(function_call.kind == VAL_FUNCTION_CALL_RESULT
+			|| function_call.kind == VAL_IF);
+	}
 	return (Value) {
 		.kind = VAL_FUNCTION_CALL_LIST,
 		.values = function_calls,
@@ -62,6 +67,12 @@ static Value val_function_call_list(Value *function_calls) {
 }
 
 static Value val_function_call(char *function_name, Value *arguments) {
+	for (size_t i = 0; i < cvec_Value_size(&arguments); i++) {
+		Value argument = arguments[i];
+		assert(argument.kind == VAL_FUNCTION_CALL_RESULT
+			|| argument.kind == VAL_UINT32
+			|| argument.kind == VAL_STRING);
+	}
 	return (Value) {
 		.kind = VAL_FUNCTION_CALL_RESULT,
 		.name = function_name,
@@ -70,6 +81,9 @@ static Value val_function_call(char *function_name, Value *arguments) {
 }
 
 static Value val_if_then(Value condition, Value then_code) {
+	assert(condition.kind == VAL_UINT32);
+	assert(then_code.kind == VAL_FUNCTION_CALL_LIST);
+
 	Value *values = cvec_Value_new(2);
 	cvec_Value_push_back(&values, condition);
 	cvec_Value_push_back(&values, then_code);
@@ -80,6 +94,8 @@ static Value val_if_then(Value condition, Value then_code) {
 }
 
 static Value val_if_then_else(Value condition, Value then_code, Value else_code) {
+	assert(else_code.kind == VAL_FUNCTION_CALL_LIST);
+
 	Value value = val_if_then(condition, then_code);
 	cvec_Value_push_back(&value.values, else_code);
 	return value;
