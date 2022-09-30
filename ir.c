@@ -1,5 +1,7 @@
 #include "main.h"
 
+static Value eval_function_call_list(Ir *ir, AstNode node);
+
 static Type type_eof() {
 	return (Type) { .kind = TYPE_EOF };
 }
@@ -65,6 +67,22 @@ static Value val_function_call(char *function_name, Value *arguments) {
 		.name = function_name,
 		.values = arguments,
 	};
+}
+
+static Value val_if_then(Value condition, Value then_code) {
+	Value *values = cvec_Value_new(2);
+	cvec_Value_push_back(&values, condition);
+	cvec_Value_push_back(&values, then_code);
+	return (Value) {
+		.kind = VAL_IF,
+		.values = values,
+	};
+}
+
+static Value val_if_then_else(Value condition, Value then_code, Value else_code) {
+	Value value = val_if_then(condition, then_code);
+	cvec_Value_push_back(&value.values, else_code);
+	return value;
 }
 
 static Symbol ir_error(const Ir *astificator, AstNode node, const char *fmt, ...) {
@@ -135,15 +153,26 @@ static Value eval_value(Ir *ir, AstNode node) {
 }
 
 static Value eval_function_call(Ir *ir, AstNode node) {
-	assert(node.kind == AST_FUNCTION_CALL);
-
-	char *name = node.name;
-	Value *arguments = cvec_Value_new(4);
-	for (size_t i = 0; i < cvec_AstNode_size(&node.nodes); i++) {
-		Value argument = eval_value(ir, node.nodes[i]);
-		cvec_Value_push_back(&arguments, argument);
+	if (node.kind == AST_FUNCTION_CALL) {
+		char *name = node.name;
+		Value *arguments = cvec_Value_new(4);
+		for (size_t i = 0; i < cvec_AstNode_size(&node.nodes); i++) {
+			Value argument = eval_value(ir, node.nodes[i]);
+			cvec_Value_push_back(&arguments, argument);
+		}
+		return val_function_call(name, arguments);
+	} else if (node.kind == AST_IF) {
+		Value condition = eval_value(ir, node.nodes[0]);
+		Value then_code = eval_function_call_list(ir, node.nodes[1]);
+		if (cvec_AstNode_size(&node.nodes) == 3) {
+			Value else_code = eval_function_call_list(ir, node.nodes[2]);
+			return val_if_then_else(condition, then_code, else_code);
+		} else {
+			return val_if_then(condition, then_code);
+		}
+	} else {
+		assert(("You should never get here", 0));
 	}
-	return val_function_call(name, arguments);
 }
 
 static Value eval_function_call_list(Ir *ir, AstNode node) {

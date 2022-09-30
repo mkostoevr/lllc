@@ -176,6 +176,7 @@ typedef enum {
 	VAL_FUNCTION_CALL_RESULT,
 	VAL_UINT32,
 	VAL_STRING,
+	VAL_IF,
 } ValueKind;
 
 // VAL_FUNCTION_CALL_RESULT
@@ -187,6 +188,8 @@ typedef enum {
 //   uvalue: value of the integer
 // VAL_STRING:
 //   name: the string
+// VAL_IF:
+//   values: condition, then code, else code
 typedef struct Value {
 	ValueKind kind;
 	char *name;
