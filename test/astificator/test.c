@@ -38,12 +38,31 @@ void dump_expression(AstNode expr) {
 	}
 }
 
-void dump_function_definition(AstNode definition) {
-	dump_function_declaration(definition);
-	printf("Body:\n");
-	for (size_t i = 0; i < cvec_AstNode_size(&definition.nodes[3].nodes); i++) {
-		AstNode function_call = definition.nodes[3].nodes[i];
-		printf("    %.*s(", cvec_char_size(&function_call.name), function_call.name);
+void dump_function_call_list(AstNode *list, int ident);
+
+void print_ident(int ident) {
+	while (ident--) {
+		printf("    ");
+	}
+}
+
+void dump_function_call_generic(AstNode function_call, int ident) {
+	if (function_call.kind == AST_IF) {
+		print_ident(ident);
+		printf("if (");
+		dump_expression(function_call.nodes[0]);
+		printf(") {\n");
+		dump_function_call_list(function_call.nodes[1].nodes, ident + 1);
+		if (cvec_AstNode_size(&function_call.nodes) == 3) {
+			print_ident(ident);
+			printf("} else {\n");
+			dump_function_call_list(function_call.nodes[2].nodes, ident + 1);
+		}
+		print_ident(ident);
+		printf("}\n");
+	} else {
+		print_ident(ident);
+		printf("%.*s(", cvec_char_size(&function_call.name), function_call.name);
 		for (size_t i = 0; i < cvec_AstNode_size(&function_call.nodes); i++) {
 			if (i != 0) {
 				printf(", ");
@@ -52,6 +71,19 @@ void dump_function_definition(AstNode definition) {
 		}
 		printf(")\n");
 	}
+}
+
+void dump_function_call_list(AstNode *list, int ident) {
+	for (size_t i = 0; i < cvec_AstNode_size(&list); i++) {
+		AstNode function_call = list[i];
+		dump_function_call_generic(function_call, ident);
+	}
+}
+
+void dump_function_definition(AstNode definition) {
+	dump_function_declaration(definition);
+	printf("Body:\n");
+	dump_function_call_list(definition.nodes[3].nodes, 1);
 }
 
 void dump_ast_node(AstNode node) {

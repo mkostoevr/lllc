@@ -4,4 +4,10 @@ Import 'f' from 'f.dll' as 'f'
 Function: g (a UInt, b UInt) UInt
 Body:
     f(0)
-    return(0)
+    if (0) {
+        if (1) {
+            return(0)
+        }
+    } else {
+        return(1)
+    }

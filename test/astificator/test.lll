@@ -4,4 +4,7 @@
 
 (function g ((a UInt) (b UInt)) UInt
  ((f 0)
-  (return 0)))
+  (if (0)
+   ((if (1)
+    ((return 0))))
+   ((return 1)))))
