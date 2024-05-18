@@ -23,15 +23,18 @@ static void outf(char **output, const char *fmt, ...) {
 	assert(*output);
 	assert(fmt);
 
-	va_list args;
-	va_start(args, fmt);
-	size_t bufsz = vsnprintf(NULL, 0, fmt, args);
-	char *buf = not_null(calloc(1, 1 + bufsz));
-	if (vsnprintf(buf, bufsz, fmt, args) > bufsz) {
-		printf("Internal error: printf buffer overflow");
+	va_list args0, args1;
+	va_start(args0, fmt);
+	va_copy(args1, args0);
+	size_t bufsz = vsnprintf(NULL, 0, fmt, args0) + 1;
+	va_end(args0);
+	char *buf = not_null(calloc(1, bufsz));
+	size_t result = vsnprintf(buf, bufsz, fmt, args1);
+	va_end(args1);
+	if (result > bufsz - 1) {
+		printf("Internal error: printf buffer overflow", fmt, bufsz, result, buf);
 		exit(-1);
 	}
-	va_end(args);
 	for (size_t i = 0; i < strlen(buf); i++) {
 		cvec_char_push_back(output, buf[i]);
 	}
