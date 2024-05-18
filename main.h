@@ -73,12 +73,17 @@ typedef struct {
 	long value;
 } Token;
 
+#define CVEC_TYPE Token
+#include "cvec/cvec.h"
+
 typedef struct {
 	Reader reader;
+	Token *lookahead;
 } Tokenizer;
 
 Tokenizer tokenizer_new(Compiler *lllc, char *filename);
 Token tokenizer_next_token(Tokenizer *tokenizer);
+Token tokenizer_peek_token(Tokenizer *tokenizer, int i);
 Token *tokenize(Compiler *lllc, char *file_name);
 
 bool token_is_eof(Token token);
@@ -88,9 +93,6 @@ bool token_is_identifier(Token token);
 bool token_is_integer(Token token);
 bool token_is_string(Token token);
 bool token_identifier_is(Token token, const char *str);
-
-#define CVEC_TYPE Token
-#include "cvec/cvec.h"
 
 #define CVEC_TYPE char
 #include "cvec/cvec.h"

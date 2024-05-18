@@ -101,10 +101,11 @@ Tokenizer tokenizer_new(Compiler *lllc, char *file_name) {
 
 	Tokenizer tokenizer;
 	tokenizer.reader = reader_new(lllc, file_name);
+	tokenizer.lookahead = cvec_Token_new(1);
 	return tokenizer;
 }
 
-Token tokenizer_next_token(Tokenizer *tokenizer) {
+static Token tokenizer_generate_next_token(Tokenizer *tokenizer) {
 	assert(tokenizer);
 
 	Reader *reader = &tokenizer->reader;
@@ -157,4 +158,18 @@ Token tokenizer_next_token(Tokenizer *tokenizer) {
 		}
 	}
 	return token_eof(reader);
+}
+
+Token tokenizer_next_token(Tokenizer *tokenizer) {
+	if (cvec_Token_size(&tokenizer->lookahead) > 0) {
+		return cvec_Token_pop_front(&tokenizer->lookahead);
+	}
+	return tokenizer_generate_next_token(tokenizer);
+}
+
+Token tokenizer_peek_token(Tokenizer *tokenizer, int i) {
+	while (i >= cvec_Token_size(&tokenizer->lookahead)) {
+		cvec_Token_push_back(&tokenizer->lookahead, tokenizer_generate_next_token(tokenizer));
+	}
+	return tokenizer->lookahead[i];
 }
