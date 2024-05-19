@@ -4,14 +4,14 @@ entry main
 section '.text' code readable executable
 
 main:
-    push 0
-    push __string__0
-    push __string__1
-    push 0
-    call [messageBoxA]
+  push 0
+  push __string__0
+  push __string__1
+  push 0
+  call [messageBoxA]
 
-    push 0
-    call [exitProcess]
+  push 0
+  call [exitProcess]
 
 
 

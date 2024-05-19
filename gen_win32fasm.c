@@ -224,7 +224,7 @@ int gen_win32fasm(Compiler *lllc, Ir *ir) {
 	outf(&result, "%.*s\n", cvec_char_size(&idata), idata);
 
 	{
-		FILE *fout = not_null(fopen(lllc->output_file_name, "w"));
+		FILE *fout = not_null(fopen(lllc->output_file_name, "wb"));
 		fwrite(result, cvec_char_size(&result), 1, fout);
 		fclose(fout);
 	}
