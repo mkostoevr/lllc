@@ -40,6 +40,12 @@ static Symbol sym_function(char *name, Type *arguments, Type return_type) {
 	};
 }
 
+static Value val_undefined() {
+	return (Value) {
+		.kind = VAL_UNDEFINED,
+	};
+}
+
 static Value val_uint32(unsigned long value) {
 	return (Value) {
 		.kind = VAL_UINT32,
@@ -163,9 +169,9 @@ static Value eval_value(Ir *ir, AstNode node) {
 		return val_uint32(node.integer);
 	} else if (node.kind == AST_STRING) {
 		return val_string(node);
-	} else {
-		assert(("You should never get here", 0));
 	}
+	assert(("You should never get here", 0));
+	return val_undefined();
 }
 
 static Value eval_function_call(Ir *ir, AstNode node) {
@@ -186,9 +192,9 @@ static Value eval_function_call(Ir *ir, AstNode node) {
 		} else {
 			return val_if_then(condition, then_code);
 		}
-	} else {
-		assert(("You should never get here", 0));
 	}
+	assert(("You should never get here", 0));
+	return val_undefined();
 }
 
 static Value eval_function_call_list(Ir *ir, AstNode node) {
