@@ -1,6 +1,6 @@
 #include "main.h"
 
-Reader reader_new(Compiler *lllc, const char *file_name) {
+Reader reader_new(Compiler *lllc, char *file_name) {
 	assert(lllc);
 	assert(file_name);
 

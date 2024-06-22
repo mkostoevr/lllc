@@ -24,7 +24,7 @@ bool token_is_string(Token token) {
 	return token.kind == TOK_STRING;
 }
 
-bool token_identifier_is(Token token, const char *str) {
+bool token_identifier_is(Token token, char *str) {
 	assert(str);
 	assert(token.identifier);
 

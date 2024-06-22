@@ -11,9 +11,9 @@
 
 #define not_null(x) ({ typeof(x) _x = (x); assert(_x); _x; })
 
-typedef const char *pcchar;
+typedef char *pchar;
 
-#define CVEC_TYPE pcchar
+#define CVEC_TYPE pchar
 #include "cvec/cvec.h"
 
 bool is_alpha(char c);
@@ -24,14 +24,14 @@ bool is_space(char c);
 
 typedef struct {
 	// Generic stuff for current compiler instance
-	const char *output_file_name;
+	char *output_file_name;
 } Compiler;
 
 Compiler compiler_new();
 
 typedef struct {
 	// Public stuff
-	const char *file_name;
+	char *file_name;
 	size_t line;
 	size_t column;
 	size_t saved_line;
@@ -43,7 +43,7 @@ typedef struct {
 	char unread_character;
 } Reader;
 
-Reader reader_new(Compiler *lllc, const char *file_name);
+Reader reader_new(Compiler *lllc, char *file_name);
 char reader_getc(Reader *reader);
 void reader_ungetc(Reader *reader, char c);
 void reader_memorize_position(Reader *reader);
@@ -92,7 +92,7 @@ bool token_is_rparen(Token token);
 bool token_is_identifier(Token token);
 bool token_is_integer(Token token);
 bool token_is_string(Token token);
-bool token_identifier_is(Token token, const char *str);
+bool token_identifier_is(Token token, char *str);
 
 #define CVEC_TYPE char
 #include "cvec/cvec.h"
@@ -166,7 +166,7 @@ typedef enum {
 
 typedef struct Type {
 	TypeKind kind;
-	const char *name;
+	char *name;
 	// TYPE_FUNCTION:
 	//   returnType[, argumentTypes...]
 	struct Type *types;
@@ -201,8 +201,8 @@ typedef struct Value {
 
 typedef struct Symbol {
 	char *name;
-	const char *imported_name;
-	const char *dll_name;
+	char *imported_name;
+	char *dll_name;
 	Type type;
 	Value value;
 } Symbol;

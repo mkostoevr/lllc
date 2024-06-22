@@ -16,7 +16,7 @@
 #define CVEC_INST
 #include "cvec/cvec.h"
 
-#define CVEC_TYPE pcchar
+#define CVEC_TYPE pchar
 #define CVEC_INST
 #include "cvec/cvec.h"
 

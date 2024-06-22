@@ -2,8 +2,8 @@
 
 typedef struct {
 	char *symbol_name;
-	const char *imported_name;
-	const char *dll_name;
+	char *imported_name;
+	char *dll_name;
 } Import;
 
 #define CVEC_TYPE Import
@@ -95,7 +95,7 @@ static void gen_function(Symbol sym, Output *output) {
 	assert(output);
 
 	char **output_code = &output->code;
-	const char *name = not_null(sym.name);
+	char *name = not_null(sym.name);
 	outf(output_code, "%.*s:\n", (int)cvec_char_size(&name), name);
 	gen_value(output, sym.value, output_code);
 	outf(output_code, "\n");
@@ -128,12 +128,12 @@ static void gen_symbol(Symbol sym, Output *output) {
 	}
 }
 
-static int lib_exists(const char **libs, const char *dll_name) {
+static int lib_exists(char **libs, char *dll_name) {
 	assert(libs);
 	assert(dll_name);
 
-	for (size_t i = 0; i < cvec_pcchar_size(&libs); i++) {
-		const char *next_dll_name = not_null(libs[i]);
+	for (size_t i = 0; i < cvec_pchar_size(&libs); i++) {
+		char *next_dll_name = not_null(libs[i]);
 		if (!strcmp(next_dll_name, dll_name)) {
 			return 1;
 		}
@@ -145,30 +145,30 @@ static char *gen_idata(Output *output) {
 	assert(output);
 
 	char *idata = not_null(cvec_char_new(1024));
-	const char **libs = not_null(cvec_pcchar_new(4));
+	char **libs = not_null(cvec_pchar_new(4));
 
 	for (size_t i = 0; i < cvec_Import_size(&output->imports); i++) {
-		const char *dll_name = not_null(output->imports[i].dll_name);
+		char *dll_name = not_null(output->imports[i].dll_name);
 		if (!lib_exists(libs, dll_name)) {
-			cvec_pcchar_push_back(&libs, dll_name);
+			cvec_pchar_push_back(&libs, dll_name);
 		}
 	}
 	// Libraries
-	for (size_t i = 0; i < cvec_pcchar_size(&libs); i++) {
-		const char *dll_name = not_null(libs[i]);
+	for (size_t i = 0; i < cvec_pchar_size(&libs); i++) {
+		char *dll_name = not_null(libs[i]);
 		outf(&idata, "dd 0,0,0,RVA %.*s_name,RVA %.*s_table\n",
 			cvec_char_size(&dll_name), dll_name,
 			cvec_char_size(&dll_name), dll_name);
 	}
 	outf(&idata, "dd 0,0,0,0,0\n\n");
 	// Per-library tables
-	for (size_t i = 0; i < cvec_pcchar_size(&libs); i++) {
-		const char *dll_name = not_null(libs[i]);
+	for (size_t i = 0; i < cvec_pchar_size(&libs); i++) {
+		char *dll_name = not_null(libs[i]);
 		outf(&idata, "%.*s_table:\n", cvec_char_size(&dll_name), dll_name);
 		for (size_t i = 0; i < cvec_Import_size(&output->imports); i++) {
 			Import import = output->imports[i];
-			const char *import_dll_name = not_null(import.dll_name);
-			const char *import_symbol_name = not_null(import.symbol_name);
+			char *import_dll_name = not_null(import.dll_name);
+			char *import_symbol_name = not_null(import.symbol_name);
 			if (!strcmp(import_dll_name, dll_name)) {
 				outf(&idata, "  %.*s dd RVA _%.*s\n",
 					cvec_char_size(&import_symbol_name), import_symbol_name,
@@ -178,8 +178,8 @@ static char *gen_idata(Output *output) {
 		outf(&idata, "  dd 0\n\n");
 	}
 	// DLL names
-	for (size_t i = 0; i < cvec_pcchar_size(&libs); i++) {
-		const char *dll_name = not_null(libs[i]);
+	for (size_t i = 0; i < cvec_pchar_size(&libs); i++) {
+		char *dll_name = not_null(libs[i]);
 		outf(&idata, "%.*s_name db '%.*s',0\n",
 			cvec_char_size(&dll_name), dll_name,
 			cvec_char_size(&dll_name), dll_name);
@@ -188,8 +188,8 @@ static char *gen_idata(Output *output) {
 	// Symbol names
 	for (size_t i = 0; i < cvec_Import_size(&output->imports); i++) {
 		Import import = output->imports[i];
-		const char *import_symbol_name = not_null(import.symbol_name);
-		const char *import_imported_name = not_null(import.imported_name);
+		char *import_symbol_name = not_null(import.symbol_name);
+		char *import_imported_name = not_null(import.imported_name);
 		outf(&idata, "_%.*s dw 0\n  db '%.*s',0\n",
 			cvec_char_size(&import_symbol_name), import_symbol_name,
 			cvec_char_size(&import_imported_name), import_imported_name);
