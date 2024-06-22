@@ -190,7 +190,9 @@ static AstNode ast_if_then_else(AstNode keyword, AstNode condition, AstNode then
 
 static void astificator_token_expect_kind(Astificator *astificator, Token token, TokenKind kind) {
 	if (token.kind != kind) {
-		astificator_error(astificator, token, "Expected %s, not %s", token_kind_str[kind], token_kind_str[token.kind]);
+		astificator_error(astificator, token, "Expected %s, not %s at %d:%d",
+				  token_kind_str[kind], token_kind_str[token.kind],
+				  token.line, token.column);
 	}
 }
 
@@ -202,9 +204,16 @@ static void astificator_token_expect_integer(Astificator *astificator, Token tok
 	astificator_token_expect_kind(astificator, token, TOK_INT);
 }
 
+static void astificator_token_expect_identifier(Astificator *astificator, Token token) {
+	astificator_token_expect_kind(astificator, token, TOK_IDENTIFIER);
+}
+
 static Token astificator_next_token(Astificator *astificator) {
-	Token token = tokenizer_next_token(astificator->tokenizer);
-	return token;
+	return tokenizer_next_token(astificator->tokenizer);
+}
+
+static Token astificator_peek_token(Astificator *astificator, int i) {
+	return tokenizer_peek_token(astificator->tokenizer, i);
 }
 
 static Token astificator_next_token_expect_string(Astificator *astificator) {
@@ -355,6 +364,8 @@ static AstNode astificator_handle_function_body(Astificator *astificator, Token 
 }
 
 static AstNode astificator_handle_function(Astificator *astificator) {
+	astificator_next_token_expect_lparen(astificator);
+	astificator_next_token_expect_identifier(astificator); /* The "function" keyword. */
 	Token name_token = astificator_next_token_expect_identifier(astificator);
 	AstNode name = ast_name(name_token);
 	AstNode arguments = astificator_handle_declaration_list(astificator);
@@ -369,22 +380,23 @@ static AstNode astificator_handle_function(Astificator *astificator) {
 }
 
 static AstNode astificator_handle_import(Astificator *astificator) {
-	assert(astificator);
-
+	astificator_next_token_expect_lparen(astificator);
+	astificator_next_token_expect_identifier(astificator); /* The "import" keyword. */
 	AstNode symbol_name = astificator_handle_name(astificator);
 	AstNode imported_name = astificator_handle_string(astificator);
 	AstNode dll_name = astificator_handle_string(astificator);
-	Token closing_parentheses = astificator_next_token_expect_rparen(astificator);
+	astificator_next_token_expect_rparen(astificator);
 	return ast_import(symbol_name, imported_name, dll_name);
 }
 
 AstNode astificator_next_list(Astificator *astificator) {
-	Token first_token = astificator_next_token(astificator);
+	Token first_token = astificator_peek_token(astificator, 0);
+	Token second_token = astificator_peek_token(astificator, 1);
 	if (token_is_eof(first_token)) {
 		return ast_eof();
 	}
 	astificator_token_expect_lparen(astificator, first_token);
-	Token second_token = astificator_next_token_expect_identifier(astificator);
+	astificator_token_expect_identifier(astificator, second_token);
 	if (token_identifier_is(second_token, "function")) {
 		return astificator_handle_function(astificator);
 	} else if (token_identifier_is(second_token, "import")) {
